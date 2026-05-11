@@ -60,8 +60,10 @@
       background: var(--bg);
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 40px 20px;
       color: var(--text);
       transition: background 0.3s;
     }
@@ -282,6 +284,159 @@
     .match-info { font-size: 0.85rem; color: var(--text-sub); margin-top: 4px; }
 
     .empty-hint { color: var(--text-hint); font-size: 0.9rem; }
+
+    /* ── 제휴문의 폼 ── */
+    .contact-wrap {
+      width: 480px;
+      margin-top: 24px;
+    }
+
+    .contact-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px 40px 40px;
+      box-shadow: var(--card-shadow);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .contact-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .contact-badge {
+      background: #e63946;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 50px;
+      letter-spacing: 1px;
+    }
+
+    .contact-card h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .contact-card .contact-desc {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #1d6fc4;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--input-color);
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.2s, background 0.3s, color 0.3s;
+      outline: none;
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #1d6fc4;
+      background: var(--input-bg);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--text-hint); }
+
+    .form-group select option { background: #1a1a2e; color: #fff; }
+
+    .form-group textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+    .form-divider {
+      height: 1px;
+      background: var(--divider);
+      margin: 20px 0;
+    }
+
+    .form-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #e63946, #c1121f);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: opacity 0.2s, transform 0.1s;
+      box-shadow: 0 4px 18px rgba(230,57,70,0.35);
+    }
+
+    .form-submit:hover { opacity: 0.92; transform: translateY(-1px); }
+    .form-submit:active { transform: translateY(0); }
+    .form-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .form-notice {
+      font-size: 0.75rem;
+      color: var(--text-hint);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .form-notice span { color: #e63946; }
+
+    .contact-toast {
+      display: none;
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .contact-toast.success {
+      background: rgba(29,111,196,0.15);
+      border: 1px solid rgba(29,111,196,0.3);
+      color: #1d6fc4;
+    }
+
+    .contact-toast.error {
+      background: rgba(230,57,70,0.12);
+      border: 1px solid rgba(230,57,70,0.3);
+      color: #e63946;
+    }
   </style>
 </head>
 <body>
@@ -501,6 +656,103 @@
 
     box.style.display = 'block';
   }
+
+  /* ── 제휴문의 폼 ── */
+  async function submitContact(e) {
+    e.preventDefault();
+    const btn = document.getElementById('contactBtn');
+    const toast = document.getElementById('contactToast');
+    btn.disabled = true;
+    btn.textContent = '전송 중...';
+    toast.style.display = 'none';
+
+    const data = new FormData(e.target);
+
+    try {
+      const res = await fetch('https://formspree.io/f/xnjgbdbo', {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' }
+      });
+
+      if (res.ok) {
+        toast.className = 'contact-toast success';
+        toast.textContent = '문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.';
+        e.target.reset();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      toast.className = 'contact-toast error';
+      toast.textContent = '전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+    } finally {
+      toast.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '문의 보내기';
+    }
+  }
 </script>
+
+<!-- 제휴문의 폼 -->
+<div class="contact-wrap">
+  <div class="contact-card">
+    <div class="contact-header">
+      <span class="contact-badge">PARTNERSHIP</span>
+    </div>
+    <h2>제휴 문의</h2>
+    <p class="contact-desc">광고 · 협업 · 비즈니스 제안 등 다양한 제휴 문의를 환영합니다.</p>
+
+    <form onsubmit="submitContact(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>이름 *</label>
+          <input type="text" name="name" placeholder="홍길동" required>
+        </div>
+        <div class="form-group">
+          <label>연락처 *</label>
+          <input type="tel" name="phone" placeholder="010-0000-0000" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>이메일 *</label>
+          <input type="email" name="email" placeholder="example@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>회사 / 브랜드명</label>
+          <input type="text" name="company" placeholder="(선택)">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>문의 유형 *</label>
+          <select name="type" required>
+            <option value="" disabled selected>선택해 주세요</option>
+            <option value="광고">광고 제휴</option>
+            <option value="협업">콘텐츠 협업</option>
+            <option value="스폰서십">스폰서십</option>
+            <option value="기타">기타 문의</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>문의 내용 *</label>
+          <textarea name="message" placeholder="제휴 목적 및 세부 내용을 자유롭게 작성해 주세요." required></textarea>
+        </div>
+      </div>
+
+      <div class="form-divider"></div>
+
+      <button type="submit" class="form-submit" id="contactBtn">문의 보내기</button>
+      <p class="form-notice"><span>*</span> 표시 항목은 필수 입력입니다.</p>
+      <div class="contact-toast" id="contactToast"></div>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>
